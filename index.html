@@ -1,0 +1,166 @@
+<html>
+  <head>
+    <title>Pokemon</title>
+    <meta charset="utf-8">
+    <meta name="msapplication-tap-highlight" content="no" />
+    <!-- This is a wide open CSP declaration. To lock this down for production, see below. 
+    <meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'">-->
+    <!-- Good default declaration:
+    * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+    * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+    * Disables use of eval() and inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+        * Enable inline JS: add 'unsafe-inline' to default-src
+        * Enable eval(): add 'unsafe-eval' to default-src
+    * Create your own at http://cspisawesome.com
+    -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: 'unsafe-inline' https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; media-src *" /> -->
+	<script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+	<script type="text/javascript" src="js/jquery.autocomplete.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/index.css" />
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+    <style>
+      html, body {
+        height: 50%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+	
+  </head>
+  <body>
+<div class="container-fluid">
+	<div class="row">
+		<div id="dex1" class="col-xs-4"> 
+			<div id="w">
+				<div id="content">
+				<div id="searchfield">
+				<form><input type="text" name="pokemon" class="biginput" id="autocomplete"></form>
+				</div><!-- @end #searchfield -->
+				<div id="content1">
+				<h1>PokeDex Locator</h1>
+				<center><p>Type in the name of the Pokemon you're looking for.</p></center>
+				</div>
+				<script type="text/javascript" src="js/pokemon-autocomplete.js"></script>
+				<script type="text/javascript" src="js/index.js"></script>
+				</div><!-- @end #content -->
+			</div><!-- @end #w -->
+		</div>
+		<div id="dex2" class="col-xs-4">
+		<div id="outputbox">
+		<p id="outputcontent"></p>
+		</div>
+		</div>
+	</div>
+</div>
+</body>
+<footer>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvBYjSrdMcFpc2NW42GPs0tXh8h0YNbs8&libraries=places"></script>
+<script>
+var x = document.getElementById("w");
+window.q = 'failed';
+
+function getLocation(type) {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+		window.q = type;
+    } else {
+        x.innerHTML = "Geolocation is not supported by this browser.";
+		var q = type;
+    }
+}
+
+function showPosition(position) {
+    var userLat = position.coords.latitude;
+	var userLon = position.coords.longitude;
+}
+
+function showError(error) {
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            x.innerHTML = "User denied the request for Geolocation."
+            break;
+        case error.POSITION_UNAVAILABLE:
+            x.innerHTML = "Location information is unavailable."
+            break;
+        case error.TIMEOUT:
+            x.innerHTML = "The request to get user location timed out."
+            break;
+        case error.UNKNOWN_ERROR:
+            x.innerHTML = "An unknown error occurred."
+            break;
+    }
+}
+var showMap = $('#show-map');
+var service;
+var infowindow;
+var map;
+
+function initialize() {
+	var pokeQ = ''+pokeType+'';
+	var userLoc = new google.maps.LatLng(43.4643, -80.5204);
+    var mapOptions = {
+	    center: userLoc,
+	    zoom: 12
+	};
+	var request = {
+    location: userLoc,
+    radius: '500',
+    query: pokeQ
+  }
+	var pokeImagePath = "/img/"+pokeImage+".ico";
+	var icon = {
+	url: "../img/"+pokeImage+".ico", // url
+	scaledSize: new google.maps.Size(65, 65), // scaled size
+	origin: new google.maps.Point(0,0), // origin
+	anchor: new google.maps.Point(0, 0) // anchor
+	};
+	var iconPlayer = {
+	url: "../img/trainer.gif", // url
+	scaledSize: new google.maps.Size(55, 55), // scaled size
+	origin: new google.maps.Point(0,0), // origin
+	anchor: new google.maps.Point(0, 0) // anchor
+	};
+	function playerMarker(){
+		var playerMarker = new google.maps.Marker({
+			map: map,
+			position: userLoc,
+			icon: iconPlayer})}
+  function createMarker(place) {
+        var placeLoc = place.geometry.location;
+		var marker = new google.maps.Marker({
+          map: map,
+          position: place.geometry.location,
+		  icon: icon
+        })}
+	var map = new google.maps.Map(document.getElementById('content1'), mapOptions);
+	var center = map.getCenter();
+    google.maps.event.trigger(map, 'resize');
+    map.setCenter(center);
+	function callback(results, status) {
+  if (status == google.maps.places.PlacesServiceStatus.OK) {
+	playerMarker();
+    for (var i = 0; i < results.length; i++) {
+      var place = results[i];
+      createMarker(results[i]);
+    }
+  }
+}
+	service = new google.maps.places.PlacesService(map);
+	service.textSearch(request, callback);
+}
+function center_map() {
+var center = map.getCenter();
+    document.getElementById("content1").style.width = 'auto';
+    document.getElementById("content1").style.height = '250px';
+    google.maps.event.trigger(map, 'resize');
+    map.setCenter(center);
+}
+
+$(document).ready(function(){
+    $('#show-map').on('click',initialize)
+});
+
+
+</script>
+</footer>
+</html>
